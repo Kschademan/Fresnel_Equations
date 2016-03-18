@@ -180,7 +180,8 @@ def printray(x_offset,Rcurvature, thickness, diameter):
         
         for i in range(0,len(y_impact[3])):
             
-            if((y_path_lens[x] < y_impact[3][i]+2 and y_path_lens[x] > y_impact[3][i]-2)):
+            if((y_path_lens[x] < y_impact[3][i]+2 and 
+                y_path_lens[x] > y_impact[3][i]-2)):
                 
                 if(x_check[i] == x_path_lens[x]):
                     break
