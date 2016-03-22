@@ -12,7 +12,7 @@ import pylab as py
 
 #old code used for different project
 
-#def K100(angle):
+#def K10(angle):
 #    
 #    wave = []
 #    
