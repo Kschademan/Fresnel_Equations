@@ -157,53 +157,85 @@ def printray(x_offset,Rcurvature, thickness, diameter):
     y_path = [x for x in range(int(np.ceil(y_impact[0])), 100)]
     x_path = [x_offset for x in y_path]
     x_check = [x for x in range(-len(y_impact[3])/2,len(y_impact[3])/2+1)]
-    y_path_lens = []
-    x_path_lens = []
-    y_path_out = []
-    x_path_out =[]
+    sep = 1000
+    stop = 0
+    halt = 0
     
-    py.plot(x_path, y_path)
     
     theta_i = np.arctan((y_impact[1] - y_impact[2])/2)
     n1 = 1
     n2 = 1.5
     
     theta_t = Snell(theta_i * 180/np.pi, n1, n2)
-    
-    
+        
     slope = 1/np.tan(theta_t)
     
-    for x in range(0, x_offset+1):
+    for x in range(0, 100):
         
-        x_path_lens = py.append(x_path_lens, x_offset - x)
-        y_path_lens = py.append(y_path_lens, y_impact[0] - slope*x)
+        x_path = py.append(x_path, x_offset - x)
+        y_path = py.append(y_path, y_impact[0] - slope*x)
         
-        for i in range(0,len(y_impact[3])):
+        for i in range(len(x_check)):
             
-            if((y_path_lens[x] < y_impact[3][i]+2 and 
-                y_path_lens[x] > y_impact[3][i]-2)):
-                
-                if(x_check[i] == x_path_lens[x]):
-                    break
-        else:
-            continue
-        break    
+            if(np.hypot(x_path[x]-x_check[i-1], y_path[x]-y_impact[3][i-1]) 
+               <= sep):
+               
+               sep = np.hypot(x_path[x]-x_check[i-1],y_path[x]-y_impact[3][i-1])
+               stop = x
+               halt = i
     
-    py.plot(x_path_lens, y_path_lens)        
-            
-    theta_f = np.arctan((y_impact[3][i-1] - y_impact[3][i]))
+    #test_x = np.linspace(x_path[stop-2], x_path[stop+2], 10)
+    #test_y = np.linspace(y_path[stop-2], y_path[stop+2], 10)
+    #
+    #py.plot(test_x, test_y)
+    #
+    #test_x = np.linspace(x_check[halt-4], x_check[halt+4], 10)
+    #test_y = np.linspace(y_impact[3][halt-4], y_impact[3][halt+4], 10)
+    #
+    #py.plot(test_x, test_y)    
+    
+    
+    #using determinates to find the point of interestion with back surface
+    def line(p1, p2):
+        A = (p1[1] - p2[1])
+        B = (p2[0] - p1[0])
+        C = (p1[0]*p2[1] - p2[0]*p1[1])
+        return A, B, -C
+    
+    intersection = True
+    i = 0
+    while(intersection):
+        i += 1
+        L1 = line([x_path[stop-i],y_path[stop-i]],
+                   [x_path[stop+i],y_path[stop+i]])
+        L2 = line([x_check[halt-i],y_impact[3][halt-i]],
+              [x_check[halt+i], y_impact[3][halt+i]])
+        D  = L1[0] * L2[1] - L1[1] * L2[0]
+        Dx = L1[2] * L2[1] - L1[1] * L2[2]
+        Dy = L1[0] * L2[2] - L1[2] * L2[0]
+        if(D != 0):
+            x = Dx / D
+            y = Dy / D
+            intersection = False
+    
+    theta_f = np.arctan((y_impact[3][halt-i] - y_impact[3][halt+i])/
+                         (x_check[halt-i] - x_check[halt+i]))
+                         
     theta_o = Snell(theta_f * 180/np.pi, n2, n1)
-    
     slope = 1/np.tan(theta_o)
     
-    for x in range(0, x_check[i]):
+    x_path = x_path[:stop + 1]
+    y_path = y_path[:stop + 1]
+    
+    for i in range(0, 100):
         
-        x_path_out = py.append(x_path_out, x_check[i] - x)
-        y_path_out = py.append(y_path_out, y_impact[3][i] + slope*x)
+        x_path = py.append(x_path, x - i)
+        y_path = py.append(y_path, y - slope*i)
     
+    #plot the ray path  
+    py.plot(x_path, y_path)                      
     
-    py.plot(x_path_out, y_path_out)  
-    
+            
     transmittance = Fresnel(theta_i, n1, n2)
     print "incident s wave transmittance"
     print transmittance[0]
