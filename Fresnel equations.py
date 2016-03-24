@@ -152,24 +152,29 @@ def printray(x_offset,Rcurvature, thickness, diameter):
         plot of the light beams path
     '''
     
+    #call "printlens" to plot the lens surfaces and obtain return values
     y_impact = printlens(x_offset,Rcurvature, thickness, diameter)
     
-    y_path = [x for x in range(int(np.ceil(y_impact[0])), 100)]
-    x_path = [x_offset for x in y_path]
-    x_check = [x for x in range(-len(y_impact[3])/2,len(y_impact[3])/2+1)]
-    sep = 1000
-    stop = 0
-    halt = 0
+    #initialize variables
+    #y's for input beam
+    y_path = [x for x in range(int(np.ceil(y_impact[0])), 100)] 
+    #x's for input beam
+    x_path = [x_offset for x in y_path] 
+    #x's for back surface of lens
+    x_check = [x for x in range(-len(y_impact[3])/2,len(y_impact[3])/2+1)] 
+    sep = 1000 #storage for separation between data points
+    stop = 0 #storage for end point on path of beam
+    halt = 0 #storage for end point position on the lens
+    n1 = 1 #index of refraction for air
+    n2 = 1.5 #index of refraction for glass
     
-    
+    #obtain angles for Snells law and use them to obtain slope of light beam
     theta_i = np.arctan((y_impact[1] - y_impact[2])/2)
-    n1 = 1
-    n2 = 1.5
-    
     theta_t = Snell(theta_i * 180/np.pi, n1, n2)
-        
     slope = 1/np.tan(theta_t)
     
+    #for loop plots path of light beam in lens and determines first estimation
+    #for contact position of light beam and back surface of the lens
     for x in range(0, 100):
         
         x_path = py.append(x_path, x_offset - x)
@@ -184,18 +189,8 @@ def printray(x_offset,Rcurvature, thickness, diameter):
                stop = x
                halt = i
     
-    #test_x = np.linspace(x_path[stop-2], x_path[stop+2], 10)
-    #test_y = np.linspace(y_path[stop-2], y_path[stop+2], 10)
-    #
-    #py.plot(test_x, test_y)
-    #
-    #test_x = np.linspace(x_check[halt-4], x_check[halt+4], 10)
-    #test_y = np.linspace(y_impact[3][halt-4], y_impact[3][halt+4], 10)
-    #
-    #py.plot(test_x, test_y)    
     
-    
-    #using determinates to find the point of interestion with back surface
+    #accurately determins contact point between light beam and back surface lens
     def line(p1, p2):
         A = (p1[1] - p2[1])
         B = (p2[0] - p1[0])
@@ -218,15 +213,18 @@ def printray(x_offset,Rcurvature, thickness, diameter):
             y = Dy / D
             intersection = False
     
+    #obtain angles for Snells law and use them to obtain slope of light beam
+    #for the back surface of the lens
     theta_f = np.arctan((y_impact[3][halt-i] - y_impact[3][halt+i])/
-                         (x_check[halt-i] - x_check[halt+i]))
-                         
+                         (x_check[halt-i] - x_check[halt+i]))                     
     theta_o = Snell(theta_f * 180/np.pi, n2, n1)
     slope = 1/np.tan(theta_o)
     
+    #remove part excess parts of the path arrays
     x_path = x_path[:stop + 1]
     y_path = y_path[:stop + 1]
     
+    #for loop creats light beam outside of the back surface of the lens
     for i in range(0, 100):
         
         x_path = py.append(x_path, x - i)
@@ -235,7 +233,7 @@ def printray(x_offset,Rcurvature, thickness, diameter):
     #plot the ray path  
     py.plot(x_path, y_path)                      
     
-            
+    #uses Module to determine S and P polarization loss at each surface        
     transmittance = Fresnel(theta_i, n1, n2)
     print "incident s wave transmittance"
     print transmittance[0]
