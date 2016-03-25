@@ -9,30 +9,6 @@
 
 import numpy as np
 import pylab as py
-
-#old code used for different project
-
-#def K10(angle):
-#    
-#    wave = []
-#    
-#    wave = np.append(wave,Fresnel(0,1,1.5))
-#    wave = np.append(wave,Fresnel(angle,1.5,1))
-#    
-#    wave = np.append(wave,Fresnel(angle,1,1.5))
-#    wave = np.append(wave,Fresnel(angle+Snell(angle,1,1.5),1.5,1))
-#    
-#    print("flat surface first")
-#    print("total s wave")
-#    print(wave[0]*wave[2])
-#    print("total p wave")
-#    print(wave[1]*wave[3])
-#    
-#    print("angled surface first")
-#    print("total s wave")
-#    print(wave[4]*wave[6])
-#    print("total p wave")
-#    print(wave[5]*wave[7])
     
 #calculates the S and P polarization transmitance
 def Fresnel(theta_i,n1,n2):
@@ -155,13 +131,19 @@ def printray(x_offset,Rcurvature, thickness, diameter):
     #call "printlens" to plot the lens surfaces and obtain return values
     y_impact = printlens(x_offset,Rcurvature, thickness, diameter)
     
+    #give printlens return values better names
+    y_fl = y_impact[0]
+    y_fl_down = y_impact[1]
+    y_fl_up = y_impact[2]
+    back_surface = y_impact[3]
+    
     #initialize variables
     #y's for input beam
-    y_path = [x for x in range(int(np.ceil(y_impact[0])), 100)] 
+    y_path = [x for x in range(int(np.ceil(y_fl)), 100)] 
     #x's for input beam
     x_path = [x_offset for x in y_path] 
     #x's for back surface of lens
-    x_check = [x for x in range(-len(y_impact[3])/2,len(y_impact[3])/2+1)] 
+    x_check = [x for x in range(-len(back_surface)/2,len(back_surface)/2+1)] 
     sep = 1000 #storage for separation between data points
     stop = 0 #storage for end point on path of beam
     halt = 0 #storage for end point position on the lens
@@ -169,7 +151,7 @@ def printray(x_offset,Rcurvature, thickness, diameter):
     n2 = 1.5 #index of refraction for glass
     
     #obtain angles for Snells law and use them to obtain slope of light beam
-    theta_i = np.arctan((y_impact[1] - y_impact[2])/2)
+    theta_i = np.arctan((y_fl_down - y_fl_up)/2)
     theta_t = Snell(theta_i * 180/np.pi, n1, n2)
     slope = 1/np.tan(theta_t)
     
@@ -178,14 +160,14 @@ def printray(x_offset,Rcurvature, thickness, diameter):
     for x in range(0, 100):
         
         x_path = py.append(x_path, x_offset - x)
-        y_path = py.append(y_path, y_impact[0] - slope*x)
+        y_path = py.append(y_path, y_fl - slope*x)
         
         for i in range(len(x_check)):
             
-            if(np.hypot(x_path[x]-x_check[i-1], y_path[x]-y_impact[3][i-1]) 
+            if(np.hypot(x_path[x]-x_check[i-1], y_path[x]-back_surface[i-1]) 
                <= sep):
                
-               sep = np.hypot(x_path[x]-x_check[i-1],y_path[x]-y_impact[3][i-1])
+               sep = np.hypot(x_path[x]-x_check[i-1],y_path[x]-back_surface[i-1])
                stop = x
                halt = i
     
@@ -203,8 +185,8 @@ def printray(x_offset,Rcurvature, thickness, diameter):
         i += 1
         L1 = line([x_path[stop-i],y_path[stop-i]],
                    [x_path[stop+i],y_path[stop+i]])
-        L2 = line([x_check[halt-i],y_impact[3][halt-i]],
-              [x_check[halt+i], y_impact[3][halt+i]])
+        L2 = line([x_check[halt-i],back_surface[halt-i]],
+              [x_check[halt+i], back_surface[halt+i]])
         D  = L1[0] * L2[1] - L1[1] * L2[0]
         Dx = L1[2] * L2[1] - L1[1] * L2[2]
         Dy = L1[0] * L2[2] - L1[2] * L2[0]
@@ -215,7 +197,7 @@ def printray(x_offset,Rcurvature, thickness, diameter):
     
     #obtain angles for Snells law and use them to obtain slope of light beam
     #for the back surface of the lens
-    theta_f = np.arctan((y_impact[3][halt-i] - y_impact[3][halt+i])/
+    theta_f = np.arctan((back_surface[halt-i] - back_surface[halt+i])/
                          (x_check[halt-i] - x_check[halt+i]))                     
     theta_o = Snell(theta_f * 180/np.pi, n2, n1)
     slope = 1/np.tan(theta_o)
