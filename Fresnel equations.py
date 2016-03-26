@@ -6,7 +6,6 @@
 #    to calculate the polarization
 ################################################################################
 
-
 import numpy as np
 import pylab as py
     
@@ -51,8 +50,7 @@ def domp(theta_i, n1, n2):
     
     return n1*np.sqrt((1-(n1/n2)*np.sin(theta_i))* \
                       (1-(n1/n2)*np.sin(theta_i)))   + n2*np.cos(theta_i)
-
-    
+   
 #Snells law            
 def Snell(theta, n1, n2):
     '''
@@ -170,8 +168,7 @@ def printray(x_offset,Rcurvature, thickness, diameter):
                sep = np.hypot(x_path[x]-x_check[i-1],y_path[x]-back_surface[i-1])
                stop = x
                halt = i
-    
-    
+        
     #accurately determins contact point between light beam and back surface lens
     def line(p1, p2):
         A = (p1[1] - p2[1])
@@ -226,13 +223,4 @@ def printray(x_offset,Rcurvature, thickness, diameter):
     print "transmitted s wave transmittance"
     print transmittance[0]
     print "transmitted p wave transmittance"
-    print transmittance[1]            
-
-        
-    
-    
-    
-    
-    
-    
-    
+    print transmittance[1]              
